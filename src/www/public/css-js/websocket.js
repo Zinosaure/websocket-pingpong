@@ -5,6 +5,7 @@ const ws = new WebSocket(`ws://${location.host}/ws/${uid}`);
 
 ws.onopen = function() {
     console.info(`Connection established, UID: ${uid}`);
+    ws.send(JSON.stringify({fn: 'login', uid: uid}));
 };
 
 ws.onclose = function(e) {
@@ -19,8 +20,15 @@ var interval;
 
 ws.onmessage = function(event) {
     data = JSON.parse(event.data);
-    
-    if (data.fn == 'start_game') {
+
+    if (data.fn == 'login' && data.puid !== '') {
+        document.querySelector('#start-game').disabled = true;
+        draw();
+    } else if (data.fn == 'logout' && data.uid == data.puid) {
+        document.querySelector('#start-game').disabled = false;
+        stop();
+        alert(`UID: ${data.uid} stopped the game!`);
+    } else if (data.fn == 'start_game') {
         document.querySelector('#start-game').disabled = true;
 
         if (data.uid === uid)
@@ -34,8 +42,10 @@ ws.onmessage = function(event) {
 
         if (data.uid === uid)
             document.querySelector('#stop-game').disabled = true;
-        else
+        else {
             stop();
+            alert(`UID: ${data.uid} stopped the game!`);
+        }
     } else if (data.fn == 'update_game')
         if (data.uid !== uid)
             game = data.game;

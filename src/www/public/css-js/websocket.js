@@ -43,12 +43,14 @@ ws.onmessage = function(event) {
 
 function start_game() {
     ws.send(JSON.stringify({fn: 'start_game', uid: uid}));
-    interval = setInterval(update_game, 200);
+    interval = setInterval(update_game, 100);
+    canvas.addEventListener('mousemove', playerMove);
 }
 
 function stop_game() {
     ws.send(JSON.stringify({fn: 'stop_game', uid: uid}));
     clearInterval(interval);
+    canvas.removeEventListener('mousemove', playerMove);
 }
 
 function update_game() {
@@ -58,4 +60,8 @@ function update_game() {
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('#start-game').addEventListener('click', start_game);
     document.querySelector('#stop-game').addEventListener('click', stop_game);
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    canvas.removeEventListener('mousemove', playerMove);
 });

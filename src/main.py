@@ -1,15 +1,15 @@
 import json
-from re import I
+
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from packages.multi_clients import Client
+from packages.handle_connections import Connection
 
 app = FastAPI()
 app.mount('/public', StaticFiles(directory='www/public'), name='public')
 templates = Jinja2Templates(directory='www/application/templates')
-clients = Client()
+connection = Connection()
 
 
 def get_who_is_playing():
@@ -29,7 +29,7 @@ async def get(request: Request):
 
 @app.websocket('/ws/{uid}')
 async def websocket_endpoint(websocket: WebSocket, uid: str):
-    await clients.connect(websocket)
+    await connection.connect(websocket)
 
     try:
         while True:
@@ -37,20 +37,20 @@ async def websocket_endpoint(websocket: WebSocket, uid: str):
 
             if data['fn'] == 'login':
                 data['puid'] = get_who_is_playing()
-                await clients.private_message(data, websocket)
+                await connection.private_message(data, websocket)
             else:
                 if data['fn'] == 'start_game':
                     set_who_is_playing(data['uid'])
                 elif data['fn'] == 'stop_game':
                     set_who_is_playing()
 
-                await clients.private_message(data, websocket)
-                await clients.broadcast(data)
+                await connection.private_message(data, websocket)
+                await connection.broadcast(data)
     except WebSocketDisconnect:
         puid = get_who_is_playing()
         
         if uid == puid:
             set_who_is_playing()
 
-        clients.disconnect(websocket)
-        await clients.broadcast({'fn': 'logout', 'uid': uid, 'puid': puid})
+        connection.disconnect(websocket)
+        await connection.broadcast({'fn': 'logout', 'uid': uid, 'puid': puid})

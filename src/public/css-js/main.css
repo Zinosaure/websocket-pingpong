@@ -1,0 +1,23 @@
+body {
+    background: linear-gradient(to bottom, #f6f8f9 0%,#e5ebee 50%,#d7dee3 51%,#f5f7f9 100%);
+}
+
+main {
+    margin: 0 auto;
+    background-color: #61F6A5;
+    width: 640px;
+    height: 480px;
+}
+
+h1, p, ul {
+    text-align: center;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    display: inline-block;
+}

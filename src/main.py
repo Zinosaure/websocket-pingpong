@@ -1,4 +1,3 @@
-import os
 import json
 from re import I
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -36,15 +35,17 @@ async def websocket_endpoint(websocket: WebSocket, uid: str):
         while True:
             data = json.loads(await websocket.receive_text())
 
-            if data['fn'] == 'start_game':
-                set_who_is_playing(data['uid'])
-            elif data['fn'] == 'stop_game':
-                set_who_is_playing()
-            elif data['fn'] == 'login':
+            if data['fn'] == 'login':
                 data['puid'] = get_who_is_playing()
+                await clients.private_message(data, websocket)
+            else:
+                if data['fn'] == 'start_game':
+                    set_who_is_playing(data['uid'])
+                elif data['fn'] == 'stop_game':
+                    set_who_is_playing()
 
-            await clients.private_message(data, websocket)
-            await clients.broadcast(data)
+                await clients.private_message(data, websocket)
+                await clients.broadcast(data)
     except WebSocketDisconnect:
         puid = get_who_is_playing()
         

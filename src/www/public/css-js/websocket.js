@@ -17,38 +17,36 @@ ws.onerror = function(e) {
 };
 
 var interval;
+var btn_start = document.querySelector('#start-game');
+var btn_stop = document.querySelector('#stop-game');
 
 ws.onmessage = function(event) {
     data = JSON.parse(event.data);
 
     if (data.fn == 'login' && data.puid !== '') {
-        document.querySelector('#start-game').disabled = true;
-        draw();
+        btn_start.disabled = true;
+        anim = requestAnimationFrame(play);
     } else if (data.fn == 'logout' && data.uid == data.puid) {
-        document.querySelector('#start-game').disabled = false;
         stop();
-        alert(`UID: ${data.uid} stopped the game!`);
+        btn_start.disabled = false;
+        alert('The player has quit the game!');
     } else if (data.fn == 'start_game') {
-        document.querySelector('#start-game').disabled = true;
+        btn_start.disabled = true;
 
         if (data.uid === uid)
-            document.querySelector('#stop-game').disabled = false;
-        else {
-            draw();
-            play();
-        }
+            btn_stop.disabled = false;
+        else
+            anim = requestAnimationFrame(play);
     } else if (data.fn == 'stop_game') {
-        document.querySelector('#start-game').disabled = false;
+        btn_start.disabled = false;
+        stop();
 
         if (data.uid === uid)
-            document.querySelector('#stop-game').disabled = true;
-        else {
-            stop();
-            alert(`UID: ${data.uid} stopped the game!`);
-        }
-    } else if (data.fn == 'update_game')
-        if (data.uid !== uid)
-            game = data.game;
+            btn_stop.disabled = true;
+        else
+            alert('The player has stopped the game!');
+    } else if (data.fn == 'update_game' && data.uid !== uid)
+        game = data.game;
 };
 
 function start_game() {
@@ -68,8 +66,9 @@ function update_game() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    document.querySelector('#start-game').addEventListener('click', start_game);
-    document.querySelector('#stop-game').addEventListener('click', stop_game);
+    btn_start.addEventListener('click', start_game);
+    btn_stop.addEventListener('click', stop_game);
+    draw();
 });
 
 document.addEventListener('DOMContentLoaded', function () {
